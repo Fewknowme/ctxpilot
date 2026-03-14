@@ -18,7 +18,7 @@ export const createMcpServer = (projectRoot: string): McpServer => {
   const server = new McpServer(
     {
       name: "ctxpilot",
-      version: "0.1.0"
+      version: "0.1.1"
     },
     {
       capabilities: {

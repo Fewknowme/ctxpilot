@@ -1,5 +1,6 @@
 import { constants } from "node:fs";
 import { access, mkdir, readFile, writeFile } from "node:fs/promises";
+import { createRequire } from "node:module";
 import * as os from "node:os";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -68,6 +69,7 @@ const PROJECT_CODEX_SKILL_PATH_SEGMENTS = [".agents", "skills", "ctxpilot", "SKI
 const CLAUDE_CTXPILOT_SECTION_HEADING = "## ctxpilot";
 const PROJECT_INSTRUCTION_SENTENCE = "At the start of every session, read .ctxpilot/context.md first.";
 const CURSOR_RULE_DESCRIPTION = "Load project context from ctxpilot LCD at session start";
+const require = createRequire(import.meta.url);
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -182,33 +184,28 @@ const createProjectInstructionResult = (
   };
 };
 
-const findInstalledMcpServerScriptPath = async (): Promise<string> => {
-  const startDirectory = path.dirname(fileURLToPath(import.meta.url));
-  let currentDirectory = startDirectory;
+const resolveInstalledMcpServerEntryPath = async (): Promise<string> => {
+  let resolvedPath: string;
 
-  while (true) {
-    const candidate = path.join(
-      currentDirectory,
-      "node_modules",
-      "@ctxpilot",
-      "mcp-server",
-      "dist",
-      "index.js"
-    );
-
-    try {
-      await access(candidate, constants.R_OK);
-      return candidate;
-    } catch {
-      const parentDirectory = path.dirname(currentDirectory);
-      if (parentDirectory === currentDirectory) {
-        break;
-      }
-      currentDirectory = parentDirectory;
-    }
+  try {
+    resolvedPath = normalizeResolvedPath(require.resolve("@ctxpilot/mcp-server"));
+  } catch {
+    throw new Error("Could not find @ctxpilot/mcp-server.\nRun: npm install -g @ctxpilot/ctxpilot");
   }
 
-  throw new Error("Could not locate node_modules/@ctxpilot/mcp-server/dist/index.js.");
+  try {
+    await access(resolvedPath, constants.R_OK);
+    return resolvedPath;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Could not read the installed @ctxpilot/mcp-server entry at ${resolvedPath}. ${message}`
+    );
+  }
+};
+
+const findInstalledMcpServerScriptPath = async (): Promise<string> => {
+  return await resolveInstalledMcpServerEntryPath();
 };
 
 export const getMcpClientTargets = (homeDirectory = os.homedir()): McpClientTarget[] => {
@@ -245,24 +242,7 @@ export const getMcpClientTargets = (homeDirectory = os.homedir()): McpClientTarg
 };
 
 export const resolveInstalledMcpServerScriptPath = async (): Promise<string> => {
-  try {
-    const metaResolve = Reflect.get(import.meta, "resolve");
-    const resolvedPath =
-      typeof metaResolve === "function"
-        ? normalizeResolvedPath(metaResolve.call(import.meta, "@ctxpilot/mcp-server") as string)
-        : await findInstalledMcpServerScriptPath();
-    await access(resolvedPath, constants.R_OK);
-    return resolvedPath;
-  } catch (error) {
-    try {
-      return await findInstalledMcpServerScriptPath();
-    } catch {
-      const message = error instanceof Error ? error.message : String(error);
-      throw new Error(
-        `Could not resolve the installed @ctxpilot/mcp-server entry. Run npm run build in the ctxpilot repo and ensure dependencies are installed. ${message}`
-      );
-    }
-  }
+  return await findInstalledMcpServerScriptPath();
 };
 
 export const createMcpServerEntry = (

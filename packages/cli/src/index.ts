@@ -16,7 +16,7 @@ import { registerWatchCommand } from "./commands/watch.js";
 
 export const createProgram = (): Command => {
   const program = new Command();
-  program.name("ctx").description("ctxpilot CLI").version("0.1.0");
+  program.name("ctx").description("ctxpilot CLI").version("0.1.1");
 
   registerInitCommand(program);
   registerBuildCommand(program);
