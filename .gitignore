@@ -1,0 +1,13 @@
+node_modules
+.dist
+.cache
+.turbo
+coverage
+.vitest
+.DS_Store
+*.log
+packages/*/dist
+.ctxpilot
+.env
+packages/cli/README.md
+packages/mcp-server/README.md
