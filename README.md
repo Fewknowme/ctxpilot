@@ -1,6 +1,7 @@
 # ctxpilot
 
 [![CI](https://github.com/fewknowme/ctxpilot/actions/workflows/ci.yml/badge.svg)](https://github.com/fewknowme/ctxpilot/actions/workflows/ci.yml)
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/rohitmadas)
 
 ctxpilot is a CLI and MCP server that keeps a living project summary in `.ctxpilot/context.md`. It updates that summary from your repo and gives the same starting context to Claude Code, Codex CLI, Cursor, and Windsurf.
 
@@ -65,6 +66,13 @@ Run `ctx setup` inside the project you want to expose. It writes a project MCP s
 | Windsurf | `~/.windsurf/mcp.json` | `.windsurf/rules/ctxpilot.md` |
 
 If a client directory is not installed, `ctx setup` skips its home config. `CLAUDE.md` is always managed because it is a plain project file.
+
+## Support
+
+If ctxpilot saves you time, consider supporting development:
+
+- [Ko-fi](https://ko-fi.com/rohitmadas)
+- [GitHub Sponsors](https://github.com/sponsors/fewknowme)
 
 ## Contributing
 
