@@ -1,5 +1,7 @@
 # ctxpilot
 
+[![CI](https://github.com/fewknowme/ctxpilot/actions/workflows/ci.yml/badge.svg)](https://github.com/fewknowme/ctxpilot/actions/workflows/ci.yml)
+
 ctxpilot is a CLI and MCP server that keeps a living project summary in `.ctxpilot/context.md`. It updates that summary from your repo and gives the same starting context to Claude Code, Codex CLI, Cursor, and Windsurf.
 
 ## Demo story
@@ -9,10 +11,16 @@ Open a fresh Codex session and ask about a cart bug. With ctxpilot set up, Codex
 ## Install
 
 ```bash
-npm install -g ctxpilot
+npm install -g @ctxpilot/ctxpilot
 ```
 
 Set `CK_PROVIDER` and the matching API key in a project `.env` or `~/.ctxpilot/.env` before `ctx init`.
+
+One-off run:
+
+```bash
+npx @ctxpilot/ctxpilot init
+```
 
 ## Quickstart
 

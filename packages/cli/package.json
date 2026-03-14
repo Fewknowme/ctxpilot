@@ -1,5 +1,5 @@
 {
-  "name": "ctxpilot",
+  "name": "@ctxpilot/ctxpilot",
   "version": "0.1.0",
   "description": "Auto-builds and injects project context into every AI tool you use",
   "type": "module",

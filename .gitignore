@@ -11,3 +11,4 @@ packages/*/dist
 .env
 packages/cli/README.md
 packages/mcp-server/README.md
+*.tgz
