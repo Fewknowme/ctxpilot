@@ -1,0 +1,598 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #0d1117;
+        color: #e6edf3;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", monospace;
+        line-height: 1.6;
+      }
+      a {
+        color: #58a6ff;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+
+      nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.25rem 2rem;
+        border-bottom: 1px solid #21262d;
+      }
+      .nav-logo {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #e6edf3;
+        letter-spacing: -0.3px;
+      }
+      .nav-links {
+        display: flex;
+        gap: 1.5rem;
+        align-items: center;
+        font-size: 0.875rem;
+      }
+      .nav-links a {
+        color: #8b949e;
+      }
+      .nav-links a:hover {
+        color: #e6edf3;
+        text-decoration: none;
+      }
+      .btn {
+        background: #238636;
+        color: #fff;
+        padding: 0.4rem 1rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+      .btn:hover {
+        background: #2ea043;
+        text-decoration: none;
+      }
+
+      .hero {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 5rem 2rem 3rem;
+        text-align: center;
+      }
+      .hero h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        line-height: 1.2;
+        color: #e6edf3;
+        margin-bottom: 1rem;
+        letter-spacing: -0.5px;
+      }
+      .hero h1 span {
+        color: #58a6ff;
+      }
+      .hero p {
+        font-size: 1.1rem;
+        color: #8b949e;
+        margin-bottom: 2rem;
+        line-height: 1.7;
+      }
+
+      .install-box {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        padding: 1rem 1.5rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 1rem;
+        font-family: "SF Mono", monospace;
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+      }
+      .install-box span {
+        color: #8b949e;
+      }
+      .install-box code {
+        color: #79c0ff;
+      }
+
+      .badges {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+      }
+      .badge {
+        background: #21262d;
+        border: 1px solid #30363d;
+        border-radius: 20px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.75rem;
+        color: #8b949e;
+      }
+      .badge.green {
+        color: #3fb950;
+      }
+
+      .demo {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 3rem 2rem;
+      }
+      .demo-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #8b949e;
+        margin-bottom: 1rem;
+      }
+      .terminal {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .terminal-bar {
+        background: #21262d;
+        padding: 0.6rem 1rem;
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        border-bottom: 1px solid #30363d;
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .dot-red {
+        background: #ff5f57;
+      }
+      .dot-yellow {
+        background: #febc2e;
+      }
+      .dot-green {
+        background: #28c840;
+      }
+      .terminal-body {
+        padding: 1.25rem 1.5rem;
+        font-family: "SF Mono", "Fira Code", monospace;
+        font-size: 0.8rem;
+        line-height: 1.8;
+      }
+      .t-prompt {
+        color: #3fb950;
+      }
+      .t-cmd {
+        color: #e6edf3;
+      }
+      .t-out {
+        color: #8b949e;
+      }
+      .t-highlight {
+        color: #79c0ff;
+      }
+      .t-success {
+        color: #3fb950;
+      }
+      .t-warn {
+        color: #d29922;
+      }
+
+      .quote-block {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-left: 3px solid #58a6ff;
+        border-radius: 0 8px 8px 0;
+        padding: 1.25rem 1.5rem;
+        margin-top: 1.5rem;
+        font-family: "SF Mono", monospace;
+        font-size: 0.8rem;
+        line-height: 1.8;
+        color: #8b949e;
+      }
+      .quote-block .q-label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #58a6ff;
+        margin-bottom: 0.75rem;
+        font-family: -apple-system, sans-serif;
+      }
+      .quote-block strong {
+        color: #e6edf3;
+        font-weight: 500;
+      }
+
+      .how {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 3rem 2rem;
+      }
+      .how h2 {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #e6edf3;
+        margin-bottom: 2rem;
+      }
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+      }
+      .step {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        padding: 1.25rem;
+      }
+      .step-num {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #8b949e;
+        margin-bottom: 0.5rem;
+      }
+      .step code {
+        display: block;
+        font-family: "SF Mono", monospace;
+        font-size: 0.8rem;
+        color: #79c0ff;
+        margin-bottom: 0.5rem;
+      }
+      .step p {
+        font-size: 0.85rem;
+        color: #8b949e;
+        line-height: 1.5;
+      }
+
+      .clients {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 3rem 2rem;
+      }
+      .clients h2 {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #e6edf3;
+        margin-bottom: 0.5rem;
+      }
+      .clients p {
+        color: #8b949e;
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+      }
+      .client-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 0.75rem;
+      }
+      .client-card {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+      }
+      .client-name {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #e6edf3;
+        margin-bottom: 0.25rem;
+      }
+      .client-files {
+        font-size: 0.75rem;
+        color: #8b949e;
+        font-family: monospace;
+      }
+
+      .cmds {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 3rem 2rem;
+      }
+      .cmds h2 {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #e6edf3;
+        margin-bottom: 1.5rem;
+      }
+      .cmd-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+      }
+      .cmd-table tr {
+        border-bottom: 1px solid #21262d;
+      }
+      .cmd-table tr:last-child {
+        border-bottom: none;
+      }
+      .cmd-table td {
+        padding: 0.75rem 0;
+        vertical-align: top;
+      }
+      .cmd-table td:first-child {
+        width: 40%;
+        font-family: monospace;
+        color: #79c0ff;
+        padding-right: 1rem;
+      }
+      .cmd-table td:last-child {
+        color: #8b949e;
+      }
+
+      .footer {
+        border-top: 1px solid #21262d;
+        padding: 2rem;
+        text-align: center;
+        color: #8b949e;
+        font-size: 0.85rem;
+      }
+      .footer a {
+        color: #58a6ff;
+      }
+
+      .divider {
+        max-width: 760px;
+        margin: 0 auto 0;
+        border: none;
+        border-top: 1px solid #21262d;
+      }
+
+      @media (max-width: 600px) {
+        .hero h1 {
+          font-size: 1.75rem;
+        }
+        nav {
+          padding: 1rem;
+        }
+        .nav-links {
+          gap: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <span class="nav-logo">ctxpilot</span>
+      <div class="nav-links">
+        <a href="https://github.com/Fewknowme/ctxpilot">GitHub</a>
+        <a href="https://www.npmjs.com/package/@ctxpilot/ctxpilot">npm</a>
+        <a
+          href="https://github.com/Fewknowme/ctxpilot/blob/main/docs/MASTERPLAN.md"
+          >Roadmap</a
+        >
+        <a href="https://github.com/Fewknowme/ctxpilot" class="btn"
+          >Star on GitHub</a
+        >
+      </div>
+    </nav>
+
+    <section class="hero">
+      <h1>Your AI already knows<br /><span>your codebase.</span></h1>
+      <p>
+        ctxpilot builds a living summary of your project and injects it into
+        every AI tool you use. Auto-updates after every git commit. Works with
+        Cursor, Claude Code, Codex, and Windsurf.
+      </p>
+      <div class="install-box">
+        <span>$</span>
+        <code>npm install -g @ctxpilot/ctxpilot</code>
+      </div>
+      <div class="badges">
+        <span class="badge green">MIT License</span>
+        <span class="badge">TypeScript</span>
+        <span class="badge">MCP Protocol</span>
+        <span class="badge">Anthropic + OpenAI</span>
+        <span class="badge">Open Source</span>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <section class="demo">
+      <div class="demo-label">What it looks like</div>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="dot dot-red"></div>
+          <div class="dot dot-yellow"></div>
+          <div class="dot dot-green"></div>
+        </div>
+        <div class="terminal-body">
+          <div>
+            <span class="t-prompt">~</span> <span class="t-cmd">ctx init</span>
+          </div>
+          <div class="t-out">
+            Scanning project... reading git log, package.json, source files
+          </div>
+          <div class="t-success">
+            LCD generated. 847 tokens. .ctxpilot/context.md written.
+          </div>
+          <br />
+          <div>
+            <span class="t-prompt">~</span> <span class="t-cmd">ctx setup</span>
+          </div>
+          <div class="t-success">
+            Configured: Claude Code, Codex CLI, Cursor, Windsurf
+          </div>
+          <div class="t-success">
+            CLAUDE.md written. Codex skill created. Cursor + Windsurf rules
+            written.
+          </div>
+          <br />
+          <div>
+            <span class="t-prompt">~</span> <span class="t-cmd">ctx watch</span>
+          </div>
+          <div class="t-out">
+            Daemon started. Watching .git/refs/heads/ for commits...
+          </div>
+          <div class="t-out">Auto-update will run 30s after each commit.</div>
+        </div>
+      </div>
+
+      <div class="quote-block">
+        <div class="q-label">Fresh Codex session — zero context pasted</div>
+        <div>
+          Asked:
+          <strong>"What is this project and what am I working on?"</strong>
+        </div>
+        <br />
+        <div>Codex responded:</div>
+        <br />
+        <div>
+          "Minimum per-item quantity is hardcoded as <strong>6</strong> in
+          several places,
+        </div>
+        <div>
+          and the store silently coerces values with
+          <strong>Math.max(quantity, 6)</strong>
+        </div>
+        <div>
+          in <strong>cart.ts#L40</strong> and <strong>cart.ts#L70</strong>."
+        </div>
+        <br />
+        <div
+          style="
+            color: #3fb950;
+            font-family: -apple-system, sans-serif;
+            font-size: 0.8rem;
+          "
+        >
+          Exact file. Exact line numbers. Private codebase. Zero explanation
+          given.
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <section class="how">
+      <h2>Three commands to set up</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">Step 1</div>
+          <code>ctx init</code>
+          <p>
+            Scans your codebase with AI. Builds a Living Context Document from
+            your files, git history, and answers to 3 quick questions.
+          </p>
+        </div>
+        <div class="step">
+          <div class="step-num">Step 2</div>
+          <code>ctx setup</code>
+          <p>
+            Hooks into every AI tool you have installed. Writes MCP configs,
+            CLAUDE.md, Cursor rules, and Codex skills automatically.
+          </p>
+        </div>
+        <div class="step">
+          <div class="step-num">Step 3</div>
+          <code>ctx watch</code>
+          <p>
+            Starts a background daemon. Detects git commits. Auto-updates the
+            LCD. You never run ctx update manually again.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <section class="clients">
+      <h2>Works with your tools</h2>
+      <p>
+        ctx setup auto-detects installed clients and writes configs in one
+        command.
+      </p>
+      <div class="client-grid">
+        <div class="client-card">
+          <div class="client-name">Claude Code</div>
+          <div class="client-files">MCP + CLAUDE.md</div>
+        </div>
+        <div class="client-card">
+          <div class="client-name">Cursor</div>
+          <div class="client-files">MCP + .cursor/rules/</div>
+        </div>
+        <div class="client-card">
+          <div class="client-name">Codex CLI</div>
+          <div class="client-files">MCP + agent skill</div>
+        </div>
+        <div class="client-card">
+          <div class="client-name">Windsurf</div>
+          <div class="client-files">MCP + .windsurf/rules/</div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <section class="cmds">
+      <h2>Commands</h2>
+      <table class="cmd-table">
+        <tr>
+          <td>ctx init</td>
+          <td>Scan codebase and build the first LCD</td>
+        </tr>
+        <tr>
+          <td>ctx setup</td>
+          <td>Write MCP configs and rule files for all installed clients</td>
+        </tr>
+        <tr>
+          <td>ctx watch</td>
+          <td>Start background daemon, auto-update on git commits</td>
+        </tr>
+        <tr>
+          <td>ctx update</td>
+          <td>Run one incremental update now</td>
+        </tr>
+        <tr>
+          <td>ctx build</td>
+          <td>Rebuild LCD from scratch, archive previous</td>
+        </tr>
+        <tr>
+          <td>ctx show</td>
+          <td>Print current LCD with token count</td>
+        </tr>
+        <tr>
+          <td>ctx inject</td>
+          <td>Output LCD as XML/markdown/plaintext for manual paste</td>
+        </tr>
+        <tr>
+          <td>ctx signal "text"</td>
+          <td>Add a manual note for next update</td>
+        </tr>
+      </table>
+    </section>
+
+    <hr class="divider" />
+
+    <footer class="footer">
+      <p>
+        Open source, MIT license. Built by
+        <a href="https://github.com/Fewknowme">Rohit Madas</a>.
+      </p>
+      <p style="margin-top: 0.5rem">
+        <a href="https://github.com/Fewknowme/ctxpilot">GitHub</a> &nbsp;·&nbsp;
+        <a href="https://www.npmjs.com/package/@ctxpilot/ctxpilot">npm</a>
+        &nbsp;·&nbsp;
+        <a href="https://ko-fi.com/rohitmadas">Ko-fi</a> &nbsp;·&nbsp;
+        <a
+          href="https://github.com/Fewknowme/ctxpilot/blob/main/CONTRIBUTING.md"
+          >Contributing</a
+        >
+      </p>
+    </footer>
+  </body>
+</html>
