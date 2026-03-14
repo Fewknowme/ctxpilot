@@ -2,7 +2,35 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+const moduleMockState = vi.hoisted(() => ({
+  forceModuleNotFound: false
+}));
+
+vi.mock("node:module", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:module")>();
+
+  return {
+    ...actual,
+    createRequire: (moduleUrl: string | URL) => {
+      const realRequire = actual.createRequire(moduleUrl);
+      const mockedRequire = ((specifier: string) => realRequire(specifier)) as NodeJS.Require;
+
+      mockedRequire.resolve = ((specifier: string) => {
+        if (moduleMockState.forceModuleNotFound && specifier === "@ctxpilot/mcp-server") {
+          const error = new Error(`Cannot find module '${specifier}'`) as NodeJS.ErrnoException;
+          error.code = "MODULE_NOT_FOUND";
+          throw error;
+        }
+
+        return realRequire.resolve(specifier);
+      }) as NodeJS.RequireResolve;
+
+      return mockedRequire;
+    }
+  };
+});
 
 import {
   configureClaudeProjectRule,
@@ -23,6 +51,7 @@ import {
   renderJsonMcpConfig,
   renderProjectInstructionBody,
   renderProjectCodexSkill,
+  resolveInstalledMcpServerScriptPath,
   upsertJsonMcpConfig,
   upsertTomlMcpConfig
 } from "./mcp.js";
@@ -116,6 +145,21 @@ describe("mcp config helpers", () => {
 
     expect(rendered).toContain(".ctxpilot/context.md");
     expect(rendered).toContain("The MCP server ctx-my-project also exposes get_context tool");
+  });
+
+  it("resolveInstalledMcpServerScriptPath throws a clear error when package is not found", async () => {
+    moduleMockState.forceModuleNotFound = true;
+
+    try {
+      await expect(resolveInstalledMcpServerScriptPath()).rejects.toThrowError(
+        "Could not find @ctxpilot/mcp-server"
+      );
+      await expect(resolveInstalledMcpServerScriptPath()).rejects.toThrowError(
+        "Run: npm install -g @ctxpilot/ctxpilot"
+      );
+    } finally {
+      moduleMockState.forceModuleNotFound = false;
+    }
   });
 
   it("preserves existing top-level TOML keys during a setup write", async () => {
