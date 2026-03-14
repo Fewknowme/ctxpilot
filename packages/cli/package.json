@@ -1,6 +1,7 @@
 {
   "name": "@ctxpilot/ctxpilot",
   "version": "0.1.0",
+  "license": "MIT",
   "description": "Auto-builds and injects project context into every AI tool you use",
   "type": "module",
   "bin": {

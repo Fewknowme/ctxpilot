@@ -1,6 +1,7 @@
 {
   "name": "ctxpilot",
   "version": "0.1.0",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "packageManager": "npm@10.9.2",
