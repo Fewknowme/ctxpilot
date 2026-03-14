@@ -27,9 +27,13 @@ import {
   upsertTomlMcpConfig
 } from "./mcp.js";
 
+const fixtureProjectRoot = "/tmp/dub";
+const fixtureServerScriptPath = "/tmp/node_modules/@ctxpilot/mcp-server/dist/index.js";
+const fixtureNamedProjectRoot = "/tmp/My Project";
+
 const entry = createMcpServerEntry(
-  "/Users/rohitmadas/otherstuff/dub",
-  "/Users/rohitmadas/pronasoft/ctxpilot/packages/mcp-server/dist/index.js"
+  fixtureProjectRoot,
+  fixtureServerScriptPath
 );
 
 describe("mcp config helpers", () => {
@@ -47,8 +51,8 @@ describe("mcp config helpers", () => {
 
     expect(parsed.mcpServers?.["ctx-dub"]).toEqual({
       command: "node",
-      args: ["/Users/rohitmadas/pronasoft/ctxpilot/packages/mcp-server/dist/index.js"],
-      cwd: "/Users/rohitmadas/otherstuff/dub"
+      args: [fixtureServerScriptPath],
+      cwd: fixtureProjectRoot
     });
   });
 
@@ -74,7 +78,7 @@ describe("mcp config helpers", () => {
     expect(nextRoot.theme).toBe("dark");
     expect(mcpServers.existing).toBeDefined();
     expect(ctxpilotServer.command).toBe("node");
-    expect(ctxpilotServer.cwd).toBe("/Users/rohitmadas/otherstuff/dub");
+    expect(ctxpilotServer.cwd).toBe(fixtureProjectRoot);
   });
 
   it("upserts TOML config while preserving unrelated settings", () => {
@@ -101,14 +105,14 @@ describe("mcp config helpers", () => {
   });
 
   it("renders the project Codex skill with the LCD path and project MCP tool reference", () => {
-    const rendered = renderProjectCodexSkill("/Users/rohitmadas/otherstuff/My Project");
+    const rendered = renderProjectCodexSkill(fixtureNamedProjectRoot);
 
     expect(rendered).toContain(".ctxpilot/context.md");
     expect(rendered).toContain("Call the ctx-my-project MCP get_context tool immediately");
   });
 
   it("renders the shared project instruction body with the LCD path and project MCP tool reference", () => {
-    const rendered = renderProjectInstructionBody("/Users/rohitmadas/otherstuff/My Project");
+    const rendered = renderProjectInstructionBody(fixtureNamedProjectRoot);
 
     expect(rendered).toContain(".ctxpilot/context.md");
     expect(rendered).toContain("The MCP server ctx-my-project also exposes get_context tool");
