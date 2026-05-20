@@ -123,6 +123,68 @@
       .badge.green {
         color: #3fb950;
       }
+      .badge.blue {
+        color: #79c0ff;
+      }
+
+      .release {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 2.5rem 2rem;
+      }
+      .release-card {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        padding: 1.25rem 1.5rem;
+      }
+      .release-kicker {
+        color: #3fb950;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+      }
+      .release h2 {
+        color: #e6edf3;
+        font-size: 1.35rem;
+        line-height: 1.35;
+        margin-bottom: 0.75rem;
+      }
+      .release p {
+        color: #8b949e;
+        font-size: 0.92rem;
+        margin-bottom: 1rem;
+      }
+      .release-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 0.75rem;
+      }
+      .release-item {
+        border-top: 1px solid #30363d;
+        padding-top: 0.75rem;
+      }
+      .release-item strong {
+        color: #e6edf3;
+        display: block;
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+      }
+      .release-item span {
+        color: #8b949e;
+        display: block;
+        font-size: 0.78rem;
+        line-height: 1.5;
+      }
+      .release-actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+        font-size: 0.85rem;
+      }
 
       .demo {
         max-width: 760px;
@@ -188,6 +250,9 @@
       }
       .t-warn {
         color: #d29922;
+      }
+      .t-muted {
+        color: #6e7681;
       }
 
       .quote-block {
@@ -384,8 +449,8 @@
       <h1>Your AI already knows<br /><span>your codebase.</span></h1>
       <p>
         ctxpilot builds a living summary of your project and injects it into
-        every AI tool you use. Auto-updates after every git commit. Works with
-        Cursor, Claude Code, Codex, and Windsurf.
+        every AI tool you use. Run it with Anthropic, OpenAI, or free local
+        Ollama models.
       </p>
       <div class="install-box">
         <span>$</span>
@@ -395,8 +460,41 @@
         <span class="badge green">MIT License</span>
         <span class="badge">TypeScript</span>
         <span class="badge">MCP Protocol</span>
+        <span class="badge blue">New: local Ollama</span>
         <span class="badge">Anthropic + OpenAI</span>
         <span class="badge">Open Source</span>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <section class="release">
+      <div class="release-card">
+        <div class="release-kicker">New in v0.1.2</div>
+        <h2>Free local context generation with Ollama</h2>
+        <p>
+          Choose local mode during <code>ctx init</code>, select a pulled
+          Ollama model, and keep project context on your machine while ctxpilot
+          builds and updates your LCD.
+        </p>
+        <div class="release-grid">
+          <div class="release-item">
+            <strong>Guided setup</strong>
+            <span>Detects Ollama, lists local models, and saves the selected model.</span>
+          </div>
+          <div class="release-item">
+            <strong>Manual config</strong>
+            <span>Use <code>CK_PROVIDER=local</code>, <code>CK_MODEL</code>, and optional <code>CK_LOCAL_URL</code>.</span>
+          </div>
+          <div class="release-item">
+            <strong>Better resilience</strong>
+            <span>Repairs near-JSON model output and archives parse failures without stopping updates.</span>
+          </div>
+        </div>
+        <div class="release-actions">
+          <a href="https://github.com/Fewknowme/ctxpilot/releases/tag/v0.1.2">Release notes</a>
+          <a href="https://www.npmjs.com/package/@ctxpilot/ctxpilot/v/0.1.2">npm package</a>
+        </div>
       </div>
     </section>
 
@@ -414,6 +512,10 @@
           <div>
             <span class="t-prompt">~</span> <span class="t-cmd">ctx init</span>
           </div>
+          <div class="t-out">How would you like to run ctxpilot?</div>
+          <div class="t-muted">1) Free (local) - Ollama, data stays on your machine</div>
+          <div class="t-muted">2) BYO API key - Anthropic or OpenAI</div>
+          <div class="t-success">Selected model: gemma3:4b</div>
           <div class="t-out">
             Scanning project... reading git log, package.json, source files
           </div>
