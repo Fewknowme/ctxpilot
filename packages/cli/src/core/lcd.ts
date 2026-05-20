@@ -45,7 +45,7 @@ export interface CkTeamConfig {
   syncOnUpdate: boolean;
 }
 
-export type CkProvider = "anthropic" | "openai";
+export type CkProvider = "anthropic" | "openai" | "local";
 
 export interface CkRuntimeConfig {
   provider: CkProvider;
@@ -79,7 +79,8 @@ const DEFAULT_LCD_TEMPLATE = `# Project Context\n> Last updated: never | Version
 
 const DEFAULT_MODELS_BY_PROVIDER: Record<CkProvider, string> = {
   anthropic: "claude-sonnet-4-20250514",
-  openai: "gpt-4o-mini"
+  openai: "gpt-4o-mini",
+  local: ""
 };
 
 const DEFAULT_CONFIG: CkRuntimeConfig = {
@@ -126,7 +127,10 @@ const mergeConfig = (value: unknown): CkRuntimeConfig => {
   }
 
   const record = value as Partial<CkRuntimeConfig>;
-  const provider = record.provider === "openai" ? "openai" : "anthropic";
+  const provider: CkProvider =
+    record.provider === "openai" ? "openai" :
+    record.provider === "local" ? "local" :
+    "anthropic";
   return {
     ...DEFAULT_CONFIG,
     ...record,
@@ -148,7 +152,7 @@ const mergeConfig = (value: unknown): CkRuntimeConfig => {
     aiModel:
       typeof record.aiModel === "string" && record.aiModel.trim().length > 0
         ? record.aiModel
-        : DEFAULT_MODELS_BY_PROVIDER[provider]
+        : DEFAULT_MODELS_BY_PROVIDER[provider] || ""
   };
 };
 

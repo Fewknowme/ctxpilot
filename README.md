@@ -15,8 +15,6 @@ Open a fresh Codex session and ask about a cart bug. With ctxpilot set up, Codex
 npm install -g @ctxpilot/ctxpilot
 ```
 
-Set `CK_PROVIDER` and the matching API key in a project `.env` or `~/.ctxpilot/.env` before `ctx init`.
-
 One-off run:
 
 ```bash
@@ -32,6 +30,48 @@ ctx watch
 ```
 
 `ctx init` creates `.ctxpilot/` and the first LCD. `ctx setup` wires MCP and native instruction files. `ctx watch` starts the background updater.
+
+## Provider setup
+
+ctxpilot supports three providers. During `ctx init` you choose between free (local) and BYO API key.
+
+### Free (local) — Ollama
+
+Data never leaves your machine. Requires [Ollama](https://ollama.com).
+
+```bash
+# Install Ollama
+brew install ollama        # macOS
+# or: curl -fsSL https://ollama.com/install.sh | sh   # Linux
+
+# Pull a model
+ollama pull gemma3:4b
+
+# Initialize ctxpilot and choose "Free (local)"
+ctx init
+```
+
+Or configure manually in `.env`:
+
+```
+CK_PROVIDER=local
+CK_MODEL=gemma3:4b
+CK_LOCAL_URL=http://localhost:11434   # optional, this is the default
+```
+
+### Anthropic or OpenAI — BYO API key
+
+Set `CK_PROVIDER` and the matching API key in a project `.env` or `~/.ctxpilot/.env` before `ctx init`.
+
+```
+CK_PROVIDER=anthropic
+CK_API_KEY=your_key_here
+```
+
+```
+CK_PROVIDER=openai
+CK_OPENAI_API_KEY=your_key_here
+```
 
 ## Command reference
 

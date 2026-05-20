@@ -5,7 +5,7 @@ import * as path from "node:path";
 import { config as loadDotenv } from "dotenv";
 import { z } from "zod";
 
-const providerSchema = z.enum(["anthropic", "openai"]);
+const providerSchema = z.enum(["anthropic", "openai", "local"]);
 
 export type AiProvider = z.infer<typeof providerSchema>;
 
@@ -36,7 +36,8 @@ const mcpEnvSchema = z.object({
   CK_OPENAI_API_KEY: optionalTrimmedString,
   CK_MODEL: optionalTrimmedString,
   CK_TOKEN_BUDGET: optionalPositiveInteger,
-  CK_CLOUD_TOKEN: optionalTrimmedString
+  CK_CLOUD_TOKEN: optionalTrimmedString,
+  CK_LOCAL_URL: optionalTrimmedString
 });
 
 export type McpEnv = z.infer<typeof mcpEnvSchema>;
@@ -71,7 +72,8 @@ const parseEnv = (): McpEnv => {
     CK_OPENAI_API_KEY: process.env.CK_OPENAI_API_KEY,
     CK_MODEL: process.env.CK_MODEL,
     CK_TOKEN_BUDGET: process.env.CK_TOKEN_BUDGET,
-    CK_CLOUD_TOKEN: process.env.CK_CLOUD_TOKEN
+    CK_CLOUD_TOKEN: process.env.CK_CLOUD_TOKEN,
+    CK_LOCAL_URL: process.env.CK_LOCAL_URL
   });
 
   if (parsedEnv.success) {

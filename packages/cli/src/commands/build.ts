@@ -6,7 +6,7 @@ import { simpleGit } from "simple-git";
 
 import { resolveModel, runClaudeText } from "../ai/client.js";
 import { renderInitPrompt } from "../ai/prompts/init.js";
-import { formatProviderSource, getProviderResolution } from "../config/env.js";
+import { formatProviderSource, getEnv, getProviderResolution } from "../config/env.js";
 import { enforceTokenBudget } from "../core/compressor.js";
 import {
   ensureCkStructure,
@@ -176,8 +176,13 @@ export const registerBuildCommand = (program: Command): void => {
       const readmeContent = await readIfExists(path.join(root, "README.md"));
       const gitLog = await getGitLog(root);
       const keyFiles = await getKeyFilesContent(root, tree);
+      const env = getEnv();
+      const config = await readCkConfig(root);
       const providerResolution = getProviderResolution();
-      const resolvedModel = resolveModel(undefined, providerResolution.provider);
+      const activeModel =
+        env.CK_MODEL ??
+        (config.provider === providerResolution.provider ? config.aiModel : undefined);
+      const resolvedModel = resolveModel(activeModel || undefined, providerResolution.provider);
 
       process.stdout.write(
         `Using provider: ${providerResolution.provider} (${formatProviderSource(providerResolution.source)}), model: ${resolvedModel}\n`
@@ -214,7 +219,6 @@ export const registerBuildCommand = (program: Command): void => {
         archiveExisting: currentLcd.exists
       });
 
-      const config = await readCkConfig(root);
       const tokenInfo = enforceTokenBudget(lcdContent, config.tokenBudget);
       await writeCkConfig(
         {

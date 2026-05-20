@@ -7,6 +7,12 @@ import { simpleGit } from "simple-git";
 
 import { resolveModel, runClaudeText } from "../ai/client.js";
 import {
+  detectOllama,
+  formatNoPulledModelsInstructions,
+  formatOllamaInstallInstructions,
+  promptOllamaModelSelection
+} from "../ai/ollama.js";
+import {
   formatProviderSource,
   getProviderResolution,
   type AiProvider,
@@ -27,7 +33,8 @@ const MAX_TREE_ENTRIES = 500;
 const MAX_KEY_FILE_BYTES = 10_000;
 const DEFAULT_MODELS_BY_PROVIDER: Record<AiProvider, string> = {
   anthropic: "claude-sonnet-4-20250514",
-  openai: "gpt-4o-mini"
+  openai: "gpt-4o-mini",
+  local: ""
 };
 
 const listTree = async (root: string): Promise<string[]> => {
@@ -121,23 +128,30 @@ const getKeyFilesContent = async (
   return chunks.join("\n\n");
 };
 
-const askInitQuestions = async (): Promise<{
+interface InitAnswers {
   provider: AiProvider;
   providerPrompted: boolean;
+  model?: string | undefined;
   goal: string;
   stackConfirmation: string;
   preferences: string;
-}> => {
+}
+
+const shouldPromptProvider = (source: string, promptProjectConfig: boolean): boolean => {
+  return source === "default" || (source === "project-config" && promptProjectConfig);
+};
+
+const askInitQuestions = async (promptProjectConfig: boolean): Promise<InitAnswers> => {
   const providerResolution = getProviderResolution();
   const rl = createInterface({ input: process.stdin, output: process.stdout });
   try {
-    const providerResult =
-      providerResolution.source === "default"
-        ? await askProviderQuestion(rl, providerResolution)
-        : {
-            provider: providerResolution.provider,
-            providerPrompted: false
-          };
+    const providerResult = shouldPromptProvider(providerResolution.source, promptProjectConfig)
+      ? await askProviderQuestion(rl)
+      : {
+          provider: providerResolution.provider,
+          providerPrompted: false,
+          model: undefined as string | undefined
+        };
     const goal = await rl.question("What is your current project goal? ");
     const stackConfirmation = await rl.question(
       "Confirm your stack in one line: ",
@@ -148,6 +162,7 @@ const askInitQuestions = async (): Promise<{
     return {
       provider: providerResult.provider,
       providerPrompted: providerResult.providerPrompted,
+      model: providerResult.model,
       goal: goal.trim(),
       stackConfirmation: stackConfirmation.trim(),
       preferences: preferences.trim(),
@@ -158,16 +173,49 @@ const askInitQuestions = async (): Promise<{
 };
 
 const askProviderQuestion = async (
-  rl: ReturnType<typeof createInterface>,
-  providerResolution: ProviderResolution
-): Promise<{ provider: AiProvider; providerPrompted: boolean }> => {
-  const providerAnswer = await rl.question(
-    `Which AI provider? (anthropic/openai) [${providerResolution.provider}]: `
-  );
+  rl: ReturnType<typeof createInterface>
+): Promise<{ provider: AiProvider; providerPrompted: boolean; model?: string }> => {
+  process.stdout.write("How would you like to run ctxpilot?\n");
+  process.stdout.write("  1) Free (local) — Ollama, data stays on your machine\n");
+  process.stdout.write("  2) BYO API key  — Anthropic or OpenAI\n");
+
+  const tierAnswer = await rl.question("Choice [1/2]: ");
+  const tier = tierAnswer.trim();
+
+  if (tier === "1" || tier.toLowerCase() === "free" || tier.toLowerCase() === "local") {
+    return askLocalProviderSetup(rl);
+  }
+
+  const providerAnswer = await rl.question("Which AI provider? (anthropic/openai) [anthropic]: ");
+  return {
+    provider: normalizeProviderInput(providerAnswer, "anthropic"),
+    providerPrompted: true
+  };
+};
+
+const askLocalProviderSetup = async (
+  rl: ReturnType<typeof createInterface>
+): Promise<{ provider: AiProvider; providerPrompted: boolean; model: string }> => {
+  process.stdout.write("Detecting Ollama...\n");
+  const detection = await detectOllama();
+
+  if (!detection.running) {
+    process.stdout.write(`\n${formatOllamaInstallInstructions()}\n`);
+    throw new Error("Ollama is not running. Install and start it, then re-run `ctx init`.");
+  }
+
+  if (detection.models.length === 0) {
+    process.stdout.write(`\n${formatNoPulledModelsInstructions()}\n`);
+    throw new Error("No Ollama models available. Pull a model, then re-run `ctx init`.");
+  }
+
+  const model = await promptOllamaModelSelection(detection.models, rl);
+  process.stdout.write(`Selected model: ${model}\n`);
 
   return {
-    provider: normalizeProviderInput(providerAnswer, providerResolution.provider),
-    providerPrompted: true
+    provider: "local",
+    providerPrompted: true,
+    model
   };
 };
 
@@ -185,7 +233,11 @@ const normalizeProviderInput = (value: string, fallback: AiProvider): AiProvider
     return "openai";
   }
 
-  throw new Error('Invalid provider. Expected "anthropic" or "openai".');
+  if (normalized === "local") {
+    return "local";
+  }
+
+  throw new Error('Invalid provider. Expected "anthropic", "openai", or "local".');
 };
 
 const getAiFailureMessage = (error: unknown): string => {
@@ -267,12 +319,15 @@ export const registerInitCommand = (program: Command): void => {
       const readmeContent = await readIfExists(path.join(root, "README.md"));
       const gitLog = await getGitLog(root);
       const keyFiles = await getKeyFilesContent(root, tree);
-      const answers = await askInitQuestions();
+      const answers = await askInitQuestions(!hadExistingLcd);
       if (answers.providerPrompted) {
         process.env.CK_PROVIDER = answers.provider;
       }
+      if (answers.provider === "local" && typeof answers.model === "string") {
+        process.env.CK_MODEL = answers.model;
+      }
       const providerResolution = getProviderResolution();
-      const resolvedModel = resolveModel(undefined, providerResolution.provider);
+      const resolvedModel = resolveModel(answers.model, providerResolution.provider);
       process.stdout.write(
         `Using provider: ${providerResolution.provider} (${formatProviderSource(providerResolution.source)}), model: ${resolvedModel}\n`
       );
@@ -310,7 +365,11 @@ export const registerInitCommand = (program: Command): void => {
 
       const currentConfig = await readCkConfig(root);
       const nextModel =
-        currentConfig.provider === answers.provider ? currentConfig.aiModel : DEFAULT_MODELS_BY_PROVIDER[answers.provider];
+        answers.provider === "local" && typeof answers.model === "string"
+          ? answers.model
+          : currentConfig.provider === answers.provider
+            ? currentConfig.aiModel
+            : DEFAULT_MODELS_BY_PROVIDER[answers.provider];
       await writeCkConfig(
         {
           ...getDefaultCkConfig(),

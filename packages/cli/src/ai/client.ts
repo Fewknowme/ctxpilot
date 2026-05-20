@@ -2,6 +2,8 @@ import { getEnv, getRequiredApiKey, type AiProvider } from "../config/env.js";
 import Anthropic from "@anthropic-ai/sdk";
 import OpenAI from "openai";
 
+import { getOllamaOpenAiBaseUrl } from "./ollama.js";
+
 export interface ClaudeRequest {
   prompt: string;
   system?: string;
@@ -14,7 +16,8 @@ export type AiClient = Anthropic | OpenAI;
 
 const DEFAULT_MODELS: Record<AiProvider, string> = {
   anthropic: "claude-sonnet-4-20250514",
-  openai: "gpt-4o-mini"
+  openai: "gpt-4o-mini",
+  local: ""
 };
 
 export const resolveProvider = (): AiProvider => getEnv().CK_PROVIDER;
@@ -24,10 +27,12 @@ export const resolveModel = (explicitModel?: string, provider = resolveProvider(
 
   if (explicitModel && explicitModel.trim().length > 0) {
     const model = explicitModel.trim();
-    const oppositeProvider = provider === "anthropic" ? "openai" : "anthropic";
 
-    if (!env.CK_MODEL && model === DEFAULT_MODELS[oppositeProvider]) {
-      return DEFAULT_MODELS[provider];
+    if (!env.CK_MODEL && (provider === "anthropic" || provider === "openai")) {
+      const oppositeProvider = provider === "anthropic" ? "openai" : "anthropic";
+      if (model === DEFAULT_MODELS[oppositeProvider]) {
+        return DEFAULT_MODELS[provider];
+      }
     }
 
     return model;
@@ -38,7 +43,14 @@ export const resolveModel = (explicitModel?: string, provider = resolveProvider(
     return envModel;
   }
 
-  return DEFAULT_MODELS[provider];
+  const resolved = DEFAULT_MODELS[provider];
+  if (resolved.length === 0) {
+    throw new Error(
+      "No model configured for local provider. Run `ctx init` to select an Ollama model, or set CK_MODEL in your .env."
+    );
+  }
+
+  return resolved;
 };
 
 export const createAnthropicClient = (apiKey?: string): Anthropic => {
@@ -49,6 +61,13 @@ export const createAnthropicClient = (apiKey?: string): Anthropic => {
 export const createOpenAiClient = (apiKey?: string): OpenAI => {
   const resolvedApiKey = apiKey ?? getRequiredApiKey("openai");
   return new OpenAI({ apiKey: resolvedApiKey });
+};
+
+export const createLocalClient = (): OpenAI => {
+  return new OpenAI({
+    apiKey: "ollama",
+    baseURL: getOllamaOpenAiBaseUrl()
+  });
 };
 
 const extractAnthropicText = (response: Anthropic.Messages.Message): string => {
@@ -91,10 +110,14 @@ const runAnthropicText = async (args: ClaudeRequest, client?: Anthropic): Promis
   return text;
 };
 
-const runOpenAiText = async (args: ClaudeRequest, client?: OpenAI): Promise<string> => {
+const runOpenAiText = async (
+  args: ClaudeRequest,
+  client?: OpenAI,
+  modelProvider: Extract<AiProvider, "openai" | "local"> = "openai"
+): Promise<string> => {
   const openai = client ?? createOpenAiClient();
   const request: OpenAI.Chat.ChatCompletionCreateParamsNonStreaming = {
-    model: resolveModel(args.model, "openai"),
+    model: resolveModel(args.model, modelProvider),
     max_tokens: args.maxTokens ?? 1024,
     messages: [
       ...(typeof args.system === "string"
@@ -131,11 +154,20 @@ const runOpenAiText = async (args: ClaudeRequest, client?: OpenAI): Promise<stri
   return text;
 };
 
+const runLocalText = async (args: ClaudeRequest, client?: OpenAI): Promise<string> => {
+  const localClient = client ?? createLocalClient();
+  return runOpenAiText(args, localClient, "local");
+};
+
 export const runClaudeText = async (
   args: ClaudeRequest,
   client?: AiClient
 ): Promise<string> => {
   const provider = resolveProvider();
+
+  if (provider === "local") {
+    return runLocalText(args, client as OpenAI | undefined);
+  }
 
   if (provider === "openai") {
     return runOpenAiText(args, client as OpenAI | undefined);

@@ -142,4 +142,64 @@ describe("env provider resolution", () => {
       source: "project-config"
     });
   });
+
+  it("resolves local provider from project .env", () => {
+    const resolution = resolveProviderResolution({
+      projectEnvProvider: "local",
+      projectEnvAnthropicKey: undefined,
+      projectEnvOpenAiKey: undefined,
+      shellProvider: undefined,
+      shellAnthropicKey: undefined,
+      shellOpenAiKey: undefined,
+      globalEnvProvider: undefined,
+      globalEnvAnthropicKey: undefined,
+      globalEnvOpenAiKey: undefined,
+      projectConfigProvider: undefined
+    });
+
+    expect(resolution).toEqual({
+      provider: "local",
+      source: "project-env"
+    });
+  });
+
+  it("resolves local provider from project config", () => {
+    const resolution = resolveProviderResolution({
+      projectEnvProvider: undefined,
+      projectEnvAnthropicKey: undefined,
+      projectEnvOpenAiKey: undefined,
+      shellProvider: undefined,
+      shellAnthropicKey: undefined,
+      shellOpenAiKey: undefined,
+      globalEnvProvider: undefined,
+      globalEnvAnthropicKey: undefined,
+      globalEnvOpenAiKey: undefined,
+      projectConfigProvider: "local"
+    });
+
+    expect(resolution).toEqual({
+      provider: "local",
+      source: "project-config"
+    });
+  });
+
+  it("does not default to local when nothing is configured", () => {
+    const resolution = resolveProviderResolution({
+      projectEnvProvider: undefined,
+      projectEnvAnthropicKey: undefined,
+      projectEnvOpenAiKey: undefined,
+      shellProvider: undefined,
+      shellAnthropicKey: undefined,
+      shellOpenAiKey: undefined,
+      globalEnvProvider: undefined,
+      globalEnvAnthropicKey: undefined,
+      globalEnvOpenAiKey: undefined,
+      projectConfigProvider: undefined
+    });
+
+    expect(resolution).toEqual({
+      provider: "anthropic",
+      source: "default"
+    });
+  });
 });

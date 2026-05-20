@@ -5,7 +5,7 @@ import * as path from "node:path";
 import { config as loadDotenv, parse as parseDotenv } from "dotenv";
 import { z } from "zod";
 
-const providerSchema = z.enum(["anthropic", "openai"]);
+const providerSchema = z.enum(["anthropic", "openai", "local"]);
 
 export type AiProvider = z.infer<typeof providerSchema>;
 export type ProviderSource =
@@ -50,7 +50,8 @@ const cliEnvSchema = z.object({
   CK_OPENAI_API_KEY: optionalTrimmedString,
   CK_MODEL: optionalTrimmedString,
   CK_TOKEN_BUDGET: optionalPositiveInteger,
-  CK_CLOUD_TOKEN: optionalTrimmedString
+  CK_CLOUD_TOKEN: optionalTrimmedString,
+  CK_LOCAL_URL: optionalTrimmedString
 });
 
 export type CliEnv = z.infer<typeof cliEnvSchema>;
@@ -262,7 +263,8 @@ const parseEnv = (): CliEnv => {
     CK_OPENAI_API_KEY: process.env.CK_OPENAI_API_KEY,
     CK_MODEL: process.env.CK_MODEL,
     CK_TOKEN_BUDGET: process.env.CK_TOKEN_BUDGET,
-    CK_CLOUD_TOKEN: process.env.CK_CLOUD_TOKEN
+    CK_CLOUD_TOKEN: process.env.CK_CLOUD_TOKEN,
+    CK_LOCAL_URL: process.env.CK_LOCAL_URL
   });
 
   if (parsedEnv.success) {
@@ -279,6 +281,10 @@ const parseEnv = (): CliEnv => {
 export const getEnv = (): CliEnv => parseEnv();
 
 export const getRequiredApiKey = (provider: AiProvider = getEnv().CK_PROVIDER): string => {
+  if (provider === "local") {
+    return "ollama";
+  }
+
   const env = getEnv();
   const projectEnvPath = getProjectEnvPath();
   const globalEnvPath = getGlobalEnvPath();

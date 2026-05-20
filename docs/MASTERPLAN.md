@@ -213,6 +213,7 @@ Current provider support:
 
 - Anthropic
 - OpenAI
+- Local (Ollama) — free, data stays on the user's machine
 
 Provider choice comes from `.env`, `~/.ctxpilot/.env`, or runtime env vars.
 
@@ -242,6 +243,7 @@ Current env vars in use:
 - `CK_OPENAI_API_KEY`
 - `CK_MODEL`
 - `CK_TOKEN_BUDGET`
+- `CK_LOCAL_URL`
 
 ## 11. Delivery phases
 
